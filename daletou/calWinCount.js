@@ -1,8 +1,8 @@
-const { calMoney } = require('./calMoney')
-const { generateLotto } = require('./genCode')
-const { calInvestMoney } = require('./calInvest')
-const data = require('./data')
-
+const { calMoney } = require("./calMoney");
+const { generateLotto } = require("./genCode");
+const { calInvestMoney } = require("./calInvest");
+const data = require("./data");
+var fs = require("fs");
 
 // 1、追号策略，每次投一注
 // 此号码为出现次数最多的号码，此号码在全部的2516期中，一共中奖256次，最多追了56次，总投入金额为5032，总共中奖金额为3135
@@ -49,118 +49,99 @@ const data = require('./data')
 // console.log(`总共${all.filter(item => item >= 5000).length}次中奖金额大于5000`);
 // console.log(`平均中奖金额为${all.reduce((a, b) => a + b) / all.length}`);
 
+// 3、追号回本策略，最多循环10次，使用出现最多的号码，将亏损18219元
+// const checkArr = ['32', '30', '35', '33', '29', '10', '07']
+// let lastWinIndex = 1;
+// let winsum = 0;
+// let investMoney = 0;
 
-// 3、追号回本策略
-const checkArr = ['32', '30', '35', '33', '29', '10', '07']
-let lastWinIndex = 1
-let winsum = 0
-let investMoney = 0
-let investSum = 0
+// let resArr = [];
+// data.forEach((item, index) => {
+//   const res = item.lotteryDrawResult;
+//   const winArr = res.split(" ");
+//   const winMoney = calMoney(winArr, checkArr);
 
-const data1 = [{
-    "lotteryDrawNum": "07001",
-    "lotteryDrawTime": "2007-05-30",
-    "lotteryDrawResult": "22 24 29 31 35 04 11"
-},
-{
-    "lotteryDrawNum": "07002",
-    "lotteryDrawTime": "2007-06-02",
-    "lotteryDrawResult": "15 22 31 34 35 05 12"
-},
-{
-    "lotteryDrawNum": "07003",
-    "lotteryDrawTime": "2007-06-04",
-    "lotteryDrawResult": "03 04 18 23 32 01 06"
-},
-{
-    "lotteryDrawNum": "07004",
-    "lotteryDrawTime": "2007-06-06",
-    "lotteryDrawResult": "06 10 16 17 25 02 04"
-},
-{
-    "lotteryDrawNum": "07005",
-    "lotteryDrawTime": "2007-06-09",
-    "lotteryDrawResult": "01 09 19 20 30 02 11"
-},
-{
-    "lotteryDrawNum": "07006",
-    "lotteryDrawTime": "2007-06-11",
-    "lotteryDrawResult": "01 16 20 23 28 03 06"
-},
-{
-    "lotteryDrawNum": "07007",
-    "lotteryDrawTime": "2007-06-13",
-    "lotteryDrawResult": "14 16 25 26 35 04 09"
-},
-{
-    "lotteryDrawNum": "07008",
-    "lotteryDrawTime": "2007-06-16",
-    "lotteryDrawResult": "29 30 31 32 33 10 07"
-},
-{
-    "lotteryDrawNum": "07009",
-    "lotteryDrawTime": "2007-06-18",
-    "lotteryDrawResult": "01 03 09 19 34 09 12"
-},
-{
-    "lotteryDrawNum": "07010",
-    "lotteryDrawTime": "2007-06-20",
-    "lotteryDrawResult": "06 08 18 29 34 09 11"
-},
-{
-    "lotteryDrawNum": "07008",
-    "lotteryDrawTime": "2007-06-16",
-    "lotteryDrawResult": "02 08 11 21 23 04 07"
-},
-{
-    "lotteryDrawNum": "07009",
-    "lotteryDrawTime": "2007-06-18",
-    "lotteryDrawResult": "01 03 09 19 34 09 12"
-},
-{
-    "lotteryDrawNum": "07010",
-    "lotteryDrawTime": "2007-06-20",
-    "lotteryDrawResult": "06 08 18 29 34 09 11"
-},
-{
-    "lotteryDrawNum": "07008",
-    "lotteryDrawTime": "2007-06-16",
-    "lotteryDrawResult": "02 08 11 21 23 04 07"
-},
-{
-    "lotteryDrawNum": "07009",
-    "lotteryDrawTime": "2007-06-18",
-    "lotteryDrawResult": "01 03 09 19 34 09 12"
-},
-{
-    "lotteryDrawNum": "07010",
-    "lotteryDrawTime": "2007-06-20",
-    "lotteryDrawResult": "06 08 18 29 34 09 11"
-},
-]
+//   const investObj = calInvestMoney(lastWinIndex);
+//   investMoney = investObj.inputMoney;
 
-data1.forEach((item, index) => {
-    const res = item.lotteryDrawResult
-    const winArr = res.split(' ')
-    const winMoney = calMoney(winArr, checkArr)
+//   let win = 0;
 
-    const investObj = calInvestMoney(lastWinIndex)
-    investSum = investObj.sum
-    investMoney = investObj.inputMoney
+//   if (winMoney > 0) {
+//     const multiple = winMoney / 2;
+//     winsum = winsum + multiple * investMoney;
+//     lastWinIndex = 0;
+//     win = multiple * investMoney;
+//   } else {
+//     winsum = winsum - investMoney;
+//     win = 0;
+//   }
+//   lastWinIndex++;
+//   if (lastWinIndex === 11) {
+//     lastWinIndex = 1;
+//   }
+//   resArr.push({
+//     lastWinIndex,
+//     winsum,
+//     res,
+//     win,
+//   });
+// });
 
-    if (winMoney > 0) {
-        const multiple = winMoney / 2
-        winsum = winsum + multiple * investMoney - investSum
-        lastWinIndex = 0
-    } else {
-        winsum = winsum - investMoney
-        // lastWinIndex++
-    }
-    lastWinIndex++
-    if (lastWinIndex === 10) {
-        lastWinIndex = 1
-    }
-    console.log(lastWinIndex, winsum, res);
+// console.log(
+//   `总期数：${data.length}，总中奖次数：${
+//     resArr.filter((item) => item.win > 0).length
+//   }`
+// );
 
-})
-console.log(winsum);
+// fs.writeFile("./res.js", JSON.stringify(resArr), (error) => {
+//   if (error) {
+//     console.log(`创建失败：${error}`);
+//   }
+
+//   console.log(`创建成功！`);
+// });
+
+// 4、每期随机回本策略
+// let lastWinIndex = 1;
+// let winsum = 0;
+// let investMoney = 0;
+
+// let resArr = [];
+// data.forEach((item, index) => {
+//   const res = item.lotteryDrawResult;
+//   const winArr = res.split(" ");
+//   const winMoney = calMoney(winArr, generateLotto());
+
+//   const investObj = calInvestMoney(lastWinIndex);
+//   investMoney = investObj.inputMoney;
+
+//   let win = 0;
+
+//   if (winMoney > 0) {
+//     const multiple = winMoney / 2;
+//     winsum = winsum + multiple * investMoney;
+//     lastWinIndex = 0;
+//     win = multiple * investMoney;
+//   } else {
+//     winsum = winsum - investMoney;
+//     win = 0;
+//   }
+//   lastWinIndex++;
+//   if (lastWinIndex === 10) {
+//     lastWinIndex = 1;
+//   }
+//   resArr.push({
+//     lastWinIndex,
+//     winsum,
+//     res,
+//     win,
+//   });
+// });
+
+// fs.writeFile("./res.js", JSON.stringify(resArr), (error) => {
+//   if (error) {
+//     console.log(`创建失败：${error}`);
+//   }
+
+//   console.log(`创建成功！`);
+// });
